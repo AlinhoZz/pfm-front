@@ -1,165 +1,226 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import type React from "react"
+import { useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Eye, EyeOff, ArrowLeft, DollarSign, BarChart3, FileText, Brain } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { applyLoginProfile } from "@/lib/auth-profile"
+import SecurityLoading from "@/components/security-loading"
 
-async function loginRequest(email: string, password: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{ token: string }>;
-}
+const API_BASE =
+  typeof window !== "undefined"
+    ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080")
+    : process.env.NEXT_PUBLIC_API_URL
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [show, setShow] = useState(false);
-  const [keep, setKeep] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const router = useRouter()
+  const { success, error } = useToast()
 
-  const emailError =
-    email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "E-mail inválido." : null;
-  const pwdError = password && password.length < 6 ? "Mínimo de 6 caracteres." : null;
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [phase, setPhase] = useState<"form" | "security">("form")
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErr(null);
-    if (emailError || pwdError) return;
-
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
     try {
-      setLoading(true);
-      const { token } = await loginRequest(email.trim(), password);
-      if (keep) localStorage.setItem("token", token);
-      router.replace("/");
-    } catch (e: any) {
-      setErr(e?.message || "Falha ao autenticar. Tente novamente.");
+      const url = new URL("/auth/login", API_BASE as string).toString()
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (res.ok && data?.token) {
+        applyLoginProfile(email, data.token)
+        success({
+          title: "Login realizado com sucesso!",
+          description: "Bem-vindo ao sistema de gestão financeira.",
+          duration: 1200,
+        })
+        setPhase("security")
+      } else {
+        error({
+          title: "Erro no login",
+          description:
+            typeof data?.message === "string"
+              ? data.message
+              : "Verifique suas credenciais e tente novamente.",
+          duration: 3500,
+        })
+      }
+    } catch {
+      error({
+        title: "Erro de conexão",
+        description: "Não foi possível conectar ao servidor.",
+        duration: 3500,
+      })
     } finally {
-      setLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
+
+  if (phase === "security") {
+    return <SecurityLoading onComplete={() => router.push("/finance-info")} />
+  }
 
   return (
-    <div className="fixed inset-0 overflow-hidden">
-      <div className="absolute -inset-8 -z-10 overflow-hidden">
-        <Image
-          src="/icons/fb_login.png"
-          alt="Fundo"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover blur-sm"
-        />
-        <div className="absolute inset-0 bg-black/30" />
+    <div className="min-h-screen bg-gradient-to-br from-[#0d192b] via-[#0c5149] to-[#0a8967] flex justify-center items-center">
+      <div className="w-full max-w-[1100px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 px-6 lg:px-8">
+        <div className="relative hidden lg:flex overflow-hidden rounded-2xl" style={{ animation: "slideInLeft 0.8s ease-out" }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(circle at 25% 25%, rgba(7, 249, 162, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(9, 193, 132, 0.03) 0%, transparent 50%),
+                linear-gradient(45deg, transparent 49%, rgba(10, 137, 103, 0.02) 50%, transparent 51%)`,
+            }}
+          />
+          <div className="relative z-10 flex flex-col justify-center px-10 text-white">
+            <div className="mb-5">
+              <div className="flex items-center mb-4">
+                <div
+                  className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#07f9a2] via-[#09c184] to-[#0a8967] flex items-center justify-center mr-4"
+                  style={{ animation: "pulseGlow 2s ease-in-out infinite alternate", boxShadow: "0 0 20px rgba(7, 249, 162, 0.2)" }}
+                >
+                  <DollarSign className="w-7 h-7 text-white" />
+                </div>
+                <h1 className="text-3xl font-bold">Gestão Financeira Inteligente</h1>
+              </div>
+              <p className="text-lg text-gray-300 leading-relaxed">
+                Plataforma completa para microempreendedores controlarem suas finanças com facilidade e precisão.
+              </p>
+            </div>
+
+            <div className="space-y-4 mt-4">
+              <div className="flex items-start">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#07f9a2] to-[#09c184] flex items-center justify-center mr-3 flex-shrink-0">
+                  <BarChart3 className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-lg text-white">Controle de receitas e despesas</h3>
+              </div>
+
+              <div className="flex items-start">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#09c184] to-[#0a8967] flex items-center justify-center mr-3 flex-shrink-0">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-lg text-white">Relatórios profissionais</h3>
+              </div>
+
+              <div className="flex items-start">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#0a8967] to-[#0c5149] flex items-center justify-center mr-3 flex-shrink-0">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-lg text-white">Sugestões inteligentes</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full flex items-center justify-center" style={{ animation: "slideInRight 0.8s ease-out" }}>
+          <div className="relative w-full max-w-md">
+            <Link href="/" className="inline-flex items-center text-white/80 hover:text-white mb-5 transition-colors lg:hidden">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar ao início
+            </Link>
+
+            <Card
+              className="border-white/10 bg-white/95 backdrop-blur-xl"
+              style={{
+                boxShadow: `0 0 0 1px rgba(7, 249, 162, 0.1),
+                  0 8px 12px -3px rgba(13, 25, 43, 0.12),
+                  0 18px 28px -6px rgba(13, 25, 43, 0.14),
+                  0 0 50px rgba(7, 249, 162, 0.05)`,
+              }}
+            >
+              <CardHeader className="text-center pb-6">
+                <div
+                  className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#07f9a2] via-[#09c184] to-[#0a8967] mx-auto mb-5 flex items-center justify-center"
+                  style={{ animation: "pulseGlow 2s ease-in-out infinite alternate", boxShadow: "0 0 20px rgba(7, 249, 162, 0.2)" }}
+                >
+                  <DollarSign className="w-8 h-8 text-white" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-gray-900 mb-1">Bem-vindo de volta</CardTitle>
+                <CardDescription className="text-gray-600 text-base">
+                  Acesse sua conta e continue gerenciando suas finanças
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-11 bg-white border-gray-200 focus:ring-2 focus:ring-[#07f9a2] focus:border-transparent text-gray-900 placeholder:text-gray-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Senha</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Sua senha"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="h-11 bg-white border-gray-200 focus:ring-2 focus:ring-[#07f9a2] focus:border-transparent pr-12 text-gray-900 placeholder:text-gray-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-11 bg-gradient-to-r from-[#07f9a2] via-[#09c184] to-[#0a8967] hover:opacity-90 text-white font-semibold text-base transition-all duration-200 hover:scale-[1.02] shadow-lg"
+                  >
+                    {isLoading ? "Entrando..." : "Entrar na Plataforma"}
+                  </Button>
+                </form>
+
+                <div className="text-center pt-2">
+                  <p className="text-gray-600">
+                    Não tem uma conta?{" "}
+                    <Link href="/register" className="text-[#0a8967] hover:text-[#07f9a2] font-semibold transition-colors">
+                      Criar conta gratuita
+                    </Link>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
-      <main className="relative grid h-full place-items-center p-4">
-        <section className="w-full max-w-md rounded-2xl border border-white/50 bg-white/70 shadow-2xl supports-[backdrop-filter]:bg-white/60 backdrop-blur-xl backdrop-brightness-110 backdrop-saturate-150">
-          <header className="p-6 border-b border-white/40">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Entrar</h1>
-            <p className="mt-1 text-sm text-slate-700/80">
-              Acesse sua conta para gerenciar suas finanças.
-            </p>
-          </header>
-
-          <form onSubmit={onSubmit} className="p-6 space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-slate-800">
-                E-mail
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="Digite seu e-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-white/60 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
-                autoComplete="email"
-                required
-              />
-              {emailError && <p className="text-xs text-red-600">{emailError}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-slate-800">
-                Senha
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={show ? "text" : "password"}
-                  placeholder="Digite sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-white/60 bg-white/70 px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-indigo-500"
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShow((s) => !s)}
-                  className="absolute inset-y-0 right-2 grid place-items-center rounded-md px-2 text-slate-600 hover:text-slate-900"
-                  aria-label={show ? "Ocultar senha" : "Mostrar senha"}
-                >
-                  {show ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {pwdError && <p className="text-xs text-red-600">{pwdError}</p>}
-            </div>
-
-            <div className="flex items-center justify-between pt-1 text-sm">
-              <label className="inline-flex items-center gap-2 select-none text-slate-800">
-                <input
-                  type="checkbox"
-                  checked={keep}
-                  onChange={(e) => setKeep(e.target.checked)}
-                  className="size-4 rounded border border-slate-300"
-                />
-                Lembrar-me
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-slate-700 hover:text-slate-900 hover:underline underline-offset-4"
-              >
-                Esqueci minha senha
-              </Link>
-            </div>
-
-            {err && (
-              <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {err}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading || !!emailError || !!pwdError}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <LogIn className="size-4" />
-              {loading ? "Entrando..." : "Login"}
-            </button>
-
-            <p className="text-sm text-slate-700 text-center">
-              Não tem conta?{" "}
-              <Link
-                href="/register"
-                className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900"
-              >
-                Criar conta
-              </Link>
-            </p>
-          </form>
-        </section>
-      </main>
+      <style jsx>{`
+        @keyframes pulseGlow { from { box-shadow: 0 0 20px rgba(7, 249, 162, 0.2); } to { box-shadow: 0 0 30px rgba(7, 249, 162, 0.4); } }
+        @keyframes slideInLeft { from { transform: translateX(-60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideInRight { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+      `}</style>
     </div>
-  );
+  )
 }
