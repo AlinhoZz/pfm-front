@@ -1,6 +1,16 @@
-export function applyLoginProfile(email: string, token: string, name?: string) {
+export function applyLoginProfile(
+  email: string,
+  token: string,
+  clientId?: string,
+  name?: string
+) {
+  if (typeof window === "undefined") return
+
   localStorage.setItem("token", token)
   localStorage.setItem("userEmail", email)
+  if (clientId) {
+    localStorage.setItem("clientId", clientId)
+  }
 
   const pretty =
     name && name.trim().length >= 3
