@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronDown, LogOut, Bell, Circle } from "lucide-react"
+import { ChevronDown, LogOut, Bell } from "lucide-react"
 
 interface ProfileHeaderProps {
   showNotifications?: boolean
@@ -21,24 +21,21 @@ export default function ProfileHeader({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [nameState, setNameState] = useState<string | null>(null)
   const [emailState, setEmailState] = useState<string | null>(null)
-  const [clientName, setClientName] = useState<string | null>(null)
 
   useEffect(() => {
     const loadProfile = () => {
       try {
         const lsName = localStorage.getItem("userName")
         const lsEmail = localStorage.getItem("userEmail")
-        const lsClientName = localStorage.getItem("clientName")
         setNameState(lsName || null)
         setEmailState(lsEmail || null)
-        setClientName(lsClientName || null)
       } catch {}
     }
 
     loadProfile()
 
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "userName" || e.key === "userEmail" || e.key === "clientName") loadProfile()
+      if (e.key === "userName" || e.key === "userEmail") loadProfile()
     }
     const onUpdate = () => loadProfile()
     const onFocus = () => loadProfile()
@@ -70,6 +67,8 @@ export default function ProfileHeader({
       localStorage.removeItem("token")
       localStorage.removeItem("userName")
       localStorage.removeItem("userEmail")
+      localStorage.removeItem("clientId")
+      localStorage.removeItem("clientName")
     } catch {}
     onLogout?.()
     router.push("/auth/login")
@@ -77,17 +76,21 @@ export default function ProfileHeader({
 
   return (
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-100">
-      <div className="max-w-6xl mx-auto px-4 lg:px-0 h-14 flex items-center justify-between gap-4">
-        {/* ESQUERDA: título + breadcrumb + cliente atual */}
-        <div className="flex items-center gap-4 min-w-0">
+      <div className="max-w-6xl mx-auto px-4 lg:px-0 h-16 flex items-center justify-between gap-4">
+        {/* ESQUERDA: saudação maior */}
+        <div className="flex items-center gap-3 min-w-0">
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-              Finer • {clientName ? clientName : "Cliente padrão"}
+            <p className="text-sm sm:text-base text-slate-500">
+              Olá,{" "}
+              <span className="font-semibold text-slate-900">
+                {nameState || "Usuário"}
+              </span>{" "}
+              👍
             </p>
           </div>
         </div>
 
-        {/* DIREITA: notificações + user */}
+        {/* DIREITA: notificações + usuário */}
         <div className="flex items-center gap-2 sm:gap-4">
           {showNotifications && (
             <div className="relative">
@@ -149,9 +152,8 @@ export default function ProfileHeader({
         </div>
       </div>
 
-      {isDropdownOpen && (
-        <div className="fixed inset-0 z-30" onClick={() => setIsDropdownOpen(false)} aria-hidden />
-      )}
+      {/* linha extra bem suave na parte de baixo */}
+      <div className="h-px w-full bg-slate-200/80" />
     </header>
   )
 }

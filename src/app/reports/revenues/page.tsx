@@ -127,7 +127,7 @@ export default function RevenuesReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
+    <div className="min-h-screen bg-slate-50 flex">
       <AppSidebar />
 
       <div className="flex-1 flex flex-col md:ml-60">

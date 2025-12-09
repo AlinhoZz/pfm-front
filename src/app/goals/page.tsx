@@ -20,8 +20,10 @@ type Goal = {
   id: string
   description: string
   targetAmount: number
-  targetDate: string // dd/MM/yyyy
+  targetDate: string // dd/MM/yyyy ou yyyy-MM-dd
   dateCreated?: string
+  accumulated?: number
+  progress?: number
 }
 
 export default function GoalsPage() {
@@ -32,6 +34,7 @@ export default function GoalsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // NOVA META
   const [showNew, setShowNew] = useState(false)
   const [newDescription, setNewDescription] = useState("")
   const [newAmount, setNewAmount] = useState("")
@@ -39,6 +42,7 @@ export default function GoalsPage() {
   const [newSaving, setNewSaving] = useState(false)
   const [newError, setNewError] = useState<string | null>(null)
 
+  // EDITAR META
   const [showEdit, setShowEdit] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [editDescription, setEditDescription] = useState("")
@@ -48,11 +52,20 @@ export default function GoalsPage() {
   const [editError, setEditError] = useState<string | null>(null)
   const [editOriginal, setEditOriginal] = useState<Goal | null>(null)
 
+  // EXCLUIR META
   const [showDelete, setShowDelete] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteDesc, setDeleteDesc] = useState("")
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  // *** NOVO: CONTRIBUIR META ***
+  const [showContrib, setShowContrib] = useState(false)
+  const [contribId, setContribId] = useState<string | null>(null)
+  const [contribDesc, setContribDesc] = useState("")
+  const [contribAmount, setContribAmount] = useState("")
+  const [contribSaving, setContribSaving] = useState(false)
+  const [contribError, setContribError] = useState<string | null>(null)
 
   function ensureDDMMYYYY(d: string) {
     if (!d) return ""
@@ -96,6 +109,7 @@ export default function GoalsPage() {
     void loadGoals(cid)
   }, [router])
 
+  // --------- NOVA META ----------
   const openNew = () => {
     setNewDescription("")
     setNewAmount("")
@@ -160,6 +174,7 @@ export default function GoalsPage() {
     }
   }
 
+  // --------- EDITAR META ----------
   const openEdit = (goal: Goal) => {
     setEditId(goal.id)
     setEditOriginal(goal)
@@ -258,6 +273,7 @@ export default function GoalsPage() {
     }
   }
 
+  // --------- EXCLUIR META ----------
   const openDelete = (goal: Goal) => {
     setDeleteId(goal.id)
     setDeleteDesc(goal.description || "")
@@ -291,8 +307,60 @@ export default function GoalsPage() {
     }
   }
 
+  // --------- *** CONTRIBUIR META *** ----------
+  const openContrib = (goal: Goal) => {
+    setContribId(goal.id)
+    setContribDesc(goal.description || "")
+    setContribAmount("")
+    setContribError(null)
+    setShowContrib(true)
+  }
+
+  const closeContrib = () => {
+    setShowContrib(false)
+    setContribId(null)
+    setContribDesc("")
+    setContribAmount("")
+  }
+
+  const handleSaveContrib = async () => {
+    if (!contribId) return
+    setContribSaving(true)
+    setContribError(null)
+
+    if (!contribAmount) {
+      setContribError("Informe um valor para contribuir.")
+      setContribSaving(false)
+      return
+    }
+
+    const amountNumber = Number(contribAmount.replace(/\./g, "").replace(",", "."))
+    if (!Number.isFinite(amountNumber) || amountNumber < 0.01) {
+      setContribError("Valor de contribuição inválido (mín. 0,01).")
+      setContribSaving(false)
+      return
+    }
+
+    try {
+      await api(`/goals/${contribId}/contribute`, {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({ amount: amountNumber }),
+      })
+
+      if (clientId) {
+        await loadGoals(clientId)
+      }
+      closeContrib()
+    } catch (e: any) {
+      setContribError(e?.message || "Não foi possível registrar a contribuição.")
+    } finally {
+      setContribSaving(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-slate-100 flex">
+    <div className="min-h-screen bg-slate-50 flex">
       <AppSidebar />
 
       <div className="flex-1 flex flex-col md:ml-60">
@@ -381,13 +449,33 @@ export default function GoalsPage() {
                         {ensureDDMMYYYY(goal.targetDate) || "—"}
                       </span>
                     </p>
+                    {typeof goal.accumulated === "number" && (
+                      <p>
+                        Já acumulado:{" "}
+                        <span className="font-medium text-slate-900">
+                          {formatCurrency(goal.accumulated)}
+                        </span>
+                      </p>
+                    )}
+                    {typeof goal.progress === "number" && (
+                      <p className="text-xs text-emerald-600">
+                        Progresso: {goal.progress.toFixed(1)}%
+                      </p>
+                    )}
                     {goal.dateCreated && (
                       <p className="text-[11px] text-slate-400">
                         Criada em: {goal.dateCreated}
                       </p>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => openContrib(goal)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-sm hover:bg-emerald-100"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Contribuir
+                    </button>
                     <button
                       onClick={() => openEdit(goal)}
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 text-sm hover:bg-slate-100"
@@ -410,6 +498,7 @@ export default function GoalsPage() {
         </main>
       </div>
 
+      {/* Modal Nova meta */}
       {showNew && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
@@ -479,6 +568,7 @@ export default function GoalsPage() {
         </div>
       )}
 
+      {/* Modal Editar meta */}
       {showEdit && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
@@ -545,6 +635,7 @@ export default function GoalsPage() {
         </div>
       )}
 
+      {/* Modal Excluir meta */}
       {showDelete && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 relative">
@@ -583,6 +674,64 @@ export default function GoalsPage() {
                 className="px-4 h-9 rounded bg-rose-500 text-white text-sm hover:bg-rose-600 disabled:opacity-70"
               >
                 {deleteLoading ? "Excluindo..." : "Excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Contribuir meta */}
+      {showContrib && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+            <button
+              onClick={closeContrib}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">
+              Contribuir para meta
+            </h2>
+            {contribDesc && (
+              <p className="text-sm text-slate-500 mb-4 break-words">
+                Meta: <span className="font-medium text-slate-900">{contribDesc}</span>
+              </p>
+            )}
+
+            {contribError && (
+              <div className="mb-3 text-sm bg-rose-50 border border-rose-200 text-rose-700 rounded p-2">
+                {contribError}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-slate-700">
+                  Valor da contribuição (R$)
+                </label>
+                <input
+                  value={contribAmount}
+                  onChange={(e) => setContribAmount(e.target.value)}
+                  className="mt-1 w-full h-9 border border-slate-200 rounded px-3 text-sm"
+                  placeholder="ex.: 100,00"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={closeContrib}
+                className="px-4 h-9 rounded bg-slate-100 text-slate-700 text-sm hover:bg-slate-200"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveContrib}
+                disabled={contribSaving}
+                className="px-4 h-9 rounded bg-emerald-500 text-white text-sm hover:bg-emerald-600 disabled:opacity-70"
+              >
+                {contribSaving ? "Registrando..." : "Contribuir"}
               </button>
             </div>
           </div>

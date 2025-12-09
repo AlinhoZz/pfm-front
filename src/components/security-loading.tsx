@@ -7,75 +7,76 @@ interface SecurityLoadingProps {
   onComplete: () => void
 }
 
-export default function SecurityLoading({ onComplete }: SecurityLoadingProps) {
-  const [progress, setProgress] = useState(0)
-  const [currentCheck, setCurrentCheck] = useState("")
-  const [currentStep, setCurrentStep] = useState(0)
-
-const securityChecks = [
-    { text: "Verificando credenciais", icon: "🛡️" },
-    { text: "Carregando dados do usuário", icon: "💻" },
-    { text: "Inicializando aplicação", icon: "🚀" },
-    { text: "Configurando permissões", icon: "🔧" },
+const CHECKS = [
+  { title: "Verificando credenciais", hint: "Confirmando seu token de acesso..." },
+  { title: "Carregando preferências", hint: "Aplicando tema, nome e cliente..." },
+  { title: "Preparando painel", hint: "Montando dashboards e relatórios..." },
+  { title: "Finalizando", hint: "Conectando aos serviços..." },
 ]
 
-  useEffect(() => {
-    let step = 0
-    const interval = setInterval(() => {
-      if (step < securityChecks.length) {
-        setCurrentCheck(securityChecks[step].text)
-        setCurrentStep(step)
-        setProgress((step + 1) * (100 / securityChecks.length))
-        step++
-      } else {
-        clearInterval(interval)
-        setTimeout(() => {
-          onComplete()
-        }, 800)
-      }
-    }, 1200)
+export default function SecurityLoading({ onComplete }: SecurityLoadingProps) {
+  const [step, setStep] = useState(0)
+  const progress = ((step + 1) / CHECKS.length) * 100
 
-    return () => clearInterval(interval)
+  useEffect(() => {
+    let current = 0
+    const timer = setInterval(() => {
+      if (current < CHECKS.length - 1) {
+        current++
+        setStep(current)
+      } else {
+        clearInterval(timer)
+        setTimeout(() => onComplete(), 500)
+      }
+    }, 950)
+
+    return () => clearInterval(timer)
   }, [onComplete])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#0a8967] rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-[#07f9a2] rounded-full blur-3xl"></div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-white via-emerald-50/35 to-white flex items-center justify-center px-4 relative overflow-hidden">
+      {/* bolhas discretas */}
+      <div className="pointer-events-none absolute -top-16 -right-10 w-48 h-48 bg-emerald-100/70 rounded-full blur-2xl" />
+      <div className="pointer-events-none absolute bottom-[-40px] left-[-20px] w-64 h-64 bg-emerald-200/50 rounded-full blur-3xl" />
 
-      <div className="max-w-sm w-full mx-4 text-center relative z-10">
-        <div className="mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-[#0a8967] to-[#07f9a2] rounded-xl mx-auto flex items-center justify-center shadow-lg">
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
+      <div className="w-full max-w-sm bg-white border border-emerald-100/80 rounded-2xl shadow-sm shadow-emerald-50/50 p-6 relative z-10">
+        {/* header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 text-sm font-semibold">
+              ✔
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Carregando ambiente</p>
+              <p className="text-xs text-slate-500">Segure um instante…</p>
+            </div>
           </div>
+          <p className="text-xs text-emerald-600 font-medium">{Math.round(progress)}%</p>
         </div>
 
-        <h1 className="text-xl font-semibold text-white mb-2">Bem-vindo de volta</h1>
-        <p className="text-slate-400 text-sm mb-8">Preparando seu ambiente...</p>
+        {/* barra */}
+        <Progress value={progress} className="h-1.5 mb-4" />
 
-        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 mb-6">
-          <div className="flex items-center mb-4">
-            <div className="w-8 h-8 bg-[#0a8967]/20 rounded-lg flex items-center justify-center mr-3">
-              <span className="text-sm">{securityChecks[currentStep]?.icon}</span>
-            </div>
-            <div className="flex-1">
-              <Progress value={progress} className="h-1.5" />
-            </div>
-            <span className="text-[#07f9a2] text-xs ml-3 font-medium">{Math.round(progress)}%</span>
-          </div>
-          <p className="text-white text-sm text-left">{currentCheck}</p>
+        {/* texto principal */}
+        <p className="text-sm font-medium text-slate-800 mb-1">{CHECKS[step].title}</p>
+        <p className="text-xs text-slate-500 mb-5">{CHECKS[step].hint}</p>
+
+        {/* listinha de passos */}
+        <div className="flex items-center gap-2 mb-4">
+          {CHECKS.map((c, i) => (
+            <div
+              key={c.title}
+              className={`h-1.5 flex-1 rounded-full transition-all ${
+                i <= step ? "bg-emerald-500" : "bg-emerald-100"
+              }`}
+            />
+          ))}
         </div>
 
-        <div className="flex justify-center">
-          <div className="w-6 h-6 border-2 border-slate-600 border-t-[#07f9a2] rounded-full animate-spin"></div>
+        {/* rodapézinho */}
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <div className="w-4 h-4 rounded-full border-2 border-emerald-200 border-t-emerald-500 animate-spin" />
+          <span>Validando acesso seguro ao painel.</span>
         </div>
       </div>
     </div>

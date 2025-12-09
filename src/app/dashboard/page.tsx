@@ -15,6 +15,7 @@ import {
   Calendar,
 } from "lucide-react"
 import { api } from "@/lib/api"
+import PageLoading from "@/components/page-loading"
 
 type FinanceInfos = {
   id?: string
@@ -48,6 +49,7 @@ type Goal = {
 export default function DashboardPage() {
   const router = useRouter()
 
+  
   const [isLoading, setIsLoading] = useState(true)
   const [financeInfos, setFinanceInfos] = useState<FinanceInfos | null>(null)
   const [expenses, setExpenses] = useState<Expense[]>([])
@@ -146,7 +148,7 @@ export default function DashboardPage() {
   )
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="flex min-h-screen bg-slate-50">
       <AppSidebar />
 
       <div className="flex-1 md:ml-60 flex flex-col">
@@ -301,12 +303,12 @@ export default function DashboardPage() {
           {/* resumo + listas */}
           <section className="bg-white border border-slate-100 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center">
                 <PiggyBank className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Resumo rápido</p>
-                <p className="text-base font-semibold text-slate-900">
+                <p className="text-sm text-blue-500">Resumo rápido</p>
+                <p className="text-base font-semibold text-blue-900">
                   {netShort >= 0
                     ? `Você está positivo em ${formatCurrency(netShort)} nas últimas entradas/saídas.`
                     : `Atenção: você está negativo em ${formatCurrency(Math.abs(netShort))}.`}

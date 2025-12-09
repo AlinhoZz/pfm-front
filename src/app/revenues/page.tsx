@@ -236,8 +236,12 @@ export default function RevenuesPage() {
 
       const body: any = {}
 
-      if ((current?.description || "") !== editDescription) body.description = editDescription || ""
-      if ((current?.datePaid || "") !== editDatePaid) body.datePaid = editDatePaid
+      if ((current?.description || "") !== editDescription) {
+        body.description = editDescription || ""
+      }
+      if ((current?.datePaid || "") !== editDatePaid) {
+        body.datePaid = editDatePaid
+      }
       if (
         typeof amountNumber === "number" &&
         Number.isFinite(amountNumber) &&
@@ -301,13 +305,14 @@ export default function RevenuesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
+    <div className="min-h-screen bg-slate-50 flex">
       <AppSidebar />
 
       <div className="flex-1 flex flex-col md:ml-60">
         <ProfileHeader showNotifications />
 
         <main className="flex-1 max-w-6xl mx-auto w-full px-4 lg:px-0 py-6 space-y-6">
+          {/* Header / ações rápidas */}
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
@@ -343,6 +348,7 @@ export default function RevenuesPage() {
             </div>
           </div>
 
+          {/* Filtros */}
           <div className="bg-white border border-slate-100 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3 text-slate-600 text-sm">
               <Filter className="w-4 h-4" />
@@ -407,6 +413,7 @@ export default function RevenuesPage() {
             )}
           </div>
 
+          {/* Lista mobile */}
           <div className="md:hidden grid gap-3">
             {isLoading ? (
               <div className="bg-white rounded-xl border border-slate-100 p-4 flex items-center gap-2 text-slate-500 text-sm">
@@ -454,6 +461,7 @@ export default function RevenuesPage() {
             )}
           </div>
 
+          {/* Tabela desktop */}
           <div className="bg-white border border-slate-100 rounded-xl overflow-hidden hidden md:block">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-100 text-sm">
@@ -535,17 +543,16 @@ export default function RevenuesPage() {
         </main>
       </div>
 
+      {/* Modal Nova receita */}
       {showNew && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-3">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
             <button
               onClick={closeNew}
               className="absolute right-4 top-4 text-slate-400 hover:text-slate-600"
-              aria-label="Fechar"
             >
               <X className="w-5 h-5" />
             </button>
-
             <h2 className="text-lg font-semibold text-slate-900 mb-4">Nova receita</h2>
 
             {newError && (
@@ -561,11 +568,10 @@ export default function RevenuesPage() {
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   className="mt-1 w-full h-9 border border-slate-200 rounded px-3 text-sm"
+                  placeholder="ex.: Salário"
                   maxLength={255}
-                  placeholder="ex: Salário"
                 />
               </div>
-
               <div>
                 <label className="text-sm font-medium text-slate-700">Valor (R$)</label>
                 <input
@@ -575,9 +581,10 @@ export default function RevenuesPage() {
                   placeholder="0,00"
                 />
               </div>
-
               <div>
-                <label className="text-sm font-medium text-slate-700">Data</label>
+                <label className="text-sm font-medium text-slate-700">
+                  Data de recebimento
+                </label>
                 <input
                   value={newDatePaid}
                   onChange={(e) => setNewDatePaid(e.target.value)}
@@ -585,7 +592,6 @@ export default function RevenuesPage() {
                   placeholder="dd/MM/yyyy"
                 />
               </div>
-
               <div>
                 <label className="text-sm font-medium text-slate-700">Categoria</label>
                 <select
@@ -625,17 +631,16 @@ export default function RevenuesPage() {
         </div>
       )}
 
+      {/* Modal Editar receita */}
       {showEdit && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-3">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
             <button
               onClick={closeEdit}
               className="absolute right-4 top-4 text-slate-400 hover:text-slate-600"
-              aria-label="Fechar"
             >
               <X className="w-5 h-5" />
             </button>
-
             <h2 className="text-lg font-semibold text-slate-900 mb-4">Editar receita</h2>
 
             {editError && (
@@ -653,7 +658,6 @@ export default function RevenuesPage() {
                   className="mt-1 w-full h-9 border border-slate-200 rounded px-3 text-sm"
                 />
               </div>
-
               <div>
                 <label className="text-sm font-medium text-slate-700">Valor (R$)</label>
                 <input
@@ -663,9 +667,10 @@ export default function RevenuesPage() {
                   placeholder="0,00"
                 />
               </div>
-
               <div>
-                <label className="text-sm font-medium text-slate-700">Data</label>
+                <label className="text-sm font-medium text-slate-700">
+                  Data de recebimento
+                </label>
                 <input
                   value={editDatePaid}
                   onChange={(e) => setEditDatePaid(e.target.value)}
@@ -694,27 +699,23 @@ export default function RevenuesPage() {
         </div>
       )}
 
+      {/* Modal Excluir receita */}
       {showDelete && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-3">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 relative">
             <button
               onClick={closeDelete}
               className="absolute right-4 top-4 text-slate-400 hover:text-slate-600"
-              aria-label="Fechar"
             >
               <X className="w-5 h-5" />
             </button>
-
             <h2 className="text-lg font-semibold text-slate-900 mb-2">Excluir receita</h2>
             <p className="text-sm text-slate-600 mb-4">
-              Tem certeza que deseja excluir
+              Tem certeza que deseja excluir{" "}
               {deleteDesc ? (
-                <>
-                  {" "}
-                  <span className="font-semibold text-slate-900">“{deleteDesc}”</span>?
-                </>
+                <span className="font-semibold text-slate-900">“{deleteDesc}”</span>
               ) : (
-                " esta receita?"
+                "esta receita?"
               )}
             </p>
 

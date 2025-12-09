@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+// @ts-ignore: allow side-effect import of global CSS without type declarations
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,9 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gestão Financeira",
+  title: "Gestão Financeira · Finer",
   description: "Plataforma para microempreendedores controlarem suas finanças.",
-};
+  icons: {
+    icon: "/icons/ICON.png",
+  },
+}
+
 
 export default function RootLayout({
   children,

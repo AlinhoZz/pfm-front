@@ -202,7 +202,7 @@ export default function ExpensesReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
+    <div className="min-h-screen bg-slate-50 flex">
       <AppSidebar />
 
       <div className="flex-1 flex flex-col md:ml-60">
@@ -316,7 +316,7 @@ export default function ExpensesReportPage() {
                 </div>
                 <button
                   onClick={handleDownloadPdf}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 text-white text-sm hover:bg-slate-800"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500 text-white text-sm hover:bg-blue-600"
                 >
                   <FileDown className="w-4 h-4" />
                   Baixar PDF
