@@ -50,7 +50,7 @@ export default function FinanceInfoPage() {
     const lsToken = typeof window !== "undefined" ? localStorage.getItem("token") : null
 
     if (!lsClientId || !lsToken) {
-      router.replace("/auth/login")
+      router.replace("/login")
       return
     }
 
@@ -112,7 +112,7 @@ export default function FinanceInfoPage() {
 
   const handleSave = async () => {
     if (!clientId) {
-      router.replace("/auth/login")
+      router.replace("/login")
       return
     }
 

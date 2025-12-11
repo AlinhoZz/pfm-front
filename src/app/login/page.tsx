@@ -31,7 +31,7 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     try {
-      const url = new URL("/auth/login", API_BASE as string).toString()
+      const url = new URL("/login", API_BASE as string).toString()
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -166,7 +166,7 @@ export default function LoginPage() {
               {isLoading ? "Entrando..." : "Entrar"}
             </Button>
 
-            <Link href="/auth/register" className="block">
+            <Link href="/register" className="block">
               <Button
                 type="button"
                 variant="outline"
