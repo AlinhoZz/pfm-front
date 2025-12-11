@@ -12,10 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { applyLoginProfile } from "@/lib/auth-profile"
 import SecurityLoading from "@/components/security-loading"
 
-const API_BASE =
-  typeof window !== "undefined"
-    ? process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
-    : process.env.NEXT_PUBLIC_API_BASE_URL
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,45 +25,45 @@ export default function LoginPage() {
   const [phase, setPhase] = useState<"form" | "security">("form")
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    try {
-      const url = new URL("/auth/login", API_BASE as string).toString()
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
-      const data = await res.json().catch(() => ({}))
+  e.preventDefault();
+  setIsLoading(true);
+  try {
+    const res = await fetch(${API_BASE}/auth/login, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (res.ok && data?.token) {
-        applyLoginProfile(email, data.token, data.clientId, data.name)
-        success({
-          title: "Login realizado!",
-          description: "Preparando seu painel...",
-          duration: 1500,
-        })
-        setPhase("security")
-      } else {
-        error({
-          title: "Erro no login",
-          description:
-            typeof data?.message === "string"
-              ? data.message
-              : "Verifique email e senha e tente novamente.",
-          duration: 3500,
-        })
-      }
-    } catch {
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data?.token) {
+      applyLoginProfile(email, data.token, data.clientId, data.name);
+      success({
+        title: "Login realizado!",
+        description: "Preparando seu painel...",
+        duration: 1500,
+      });
+      setPhase("security");
+    } else {
       error({
-        title: "Erro de conexão",
-        description: "Não foi possível falar com o servidor.",
+        title: "Erro no login",
+        description:
+          typeof data?.message === "string"
+            ? data.message
+            : "Verifique email e senha e tente novamente.",
         duration: 3500,
-      })
-    } finally {
-      setIsLoading(false)
+      });
     }
+  } catch {
+    error({
+      title: "Erro de conexão",
+      description: "Não foi possível falar com o servidor.",
+      duration: 3500,
+    });
+  } finally {
+    setIsLoading(false);
   }
+};
 
   if (phase === "security") {
     return <SecurityLoading onComplete={() => router.push("/dashboard")} />
