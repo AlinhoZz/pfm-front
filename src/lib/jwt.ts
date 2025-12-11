@@ -1,4 +1,4 @@
-export function decodeJwt<T = any>(token: string | null | undefined): T | null {
+export function decodeJwt<T = unknown>(token: string | null | undefined): T | null {
   try {
     if (!token) return null
     const [, payload] = token.split(".")
