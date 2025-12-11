@@ -12,8 +12,6 @@ import { useToast } from "@/hooks/use-toast"
 import { applyLoginProfile } from "@/lib/auth-profile"
 import SecurityLoading from "@/components/security-loading"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
 export default function LoginPage() {
   const router = useRouter()
   const { success, error } = useToast()
@@ -24,11 +22,14 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [phase, setPhase] = useState<"form" | "security">("form")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/";
+
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
   try {
-    const res = await fetch(${API_BASE}/auth/login, {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
