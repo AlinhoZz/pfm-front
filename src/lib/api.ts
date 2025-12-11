@@ -19,9 +19,6 @@ export async function api<T = any>(path: string, options: ApiOptions = {}) {
     }
   }
 
-  // CSRF: teu back está mandando "csrftoken=..."
-  // Django espera "X-CSRFToken"
-  // alguns setups aceitam também "X-XSRF-TOKEN"
   if (isBrowser) {
     const cookie = document.cookie.split("; ").find((c) => c.startsWith("csrftoken=") || c.startsWith("XSRF-TOKEN="));
     if (cookie) {
@@ -36,7 +33,6 @@ export async function api<T = any>(path: string, options: ApiOptions = {}) {
   }
 
   const res = await fetch(`${base}${path}`, {
-    // IMPORTANTE: mandar o cookie de CSRF
     credentials: "include",
     cache: "no-store",
     ...options,
@@ -45,7 +41,6 @@ export async function api<T = any>(path: string, options: ApiOptions = {}) {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    // deixa o erro visível pra gente debugar
     throw new Error(text || `HTTP ${res.status}`);
   }
 
