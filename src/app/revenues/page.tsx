@@ -119,7 +119,7 @@ export default function RevenuesPage() {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
     const cid = typeof window !== "undefined" ? localStorage.getItem("clientId") : null
     if (!token || !cid) {
-      router.replace("/login")
+      router.replace("/auth/login")
       return
     }
     setClientId(cid)

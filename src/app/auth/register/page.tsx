@@ -37,7 +37,7 @@ export default function RegisterPage() {
     setIsLoading(true)
     try {
       const base = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
-      const res = await fetch(`${base}/register`, {
+      const res = await fetch(`${base}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -59,7 +59,7 @@ export default function RegisterPage() {
 
       const delay = 2600
       sonner.success("Conta criada com sucesso! Redirecionando...", { duration: delay })
-      setTimeout(() => router.push("/login"), delay)
+      setTimeout(() => router.push("/auth/login"), delay)
     } catch {
       sonner.error("Erro de conexão. Tente novamente.")
     } finally {
@@ -91,7 +91,7 @@ export default function RegisterPage() {
               <span className="text-xs font-medium">Criar nova conta</span>
             </div>
             <Link
-              href="/login"
+              href="/auth/login"
               className="inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-900"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -172,7 +172,7 @@ export default function RegisterPage() {
 
             <p className="text-center text-sm text-emerald-900/80">
               Já tem conta?{" "}
-              <Link href="/login" className="text-emerald-700 hover:text-emerald-900 font-semibold">
+              <Link href="/auth/login" className="text-emerald-700 hover:text-emerald-900 font-semibold">
                 Fazer login
               </Link>
             </p>

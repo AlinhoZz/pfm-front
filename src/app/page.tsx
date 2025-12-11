@@ -41,12 +41,12 @@ export default function HomePage() {
 
           <div className="flex items-center gap-3">
             <a
-              href="/login"
+              href="/auth/login"
               className="inline-flex items-center justify-center h-9 px-4 rounded-full border border-blue-400 text-blue-500 bg-transparent text-sm hover:bg-blue-50"
             >
               Entrar
             </a>
-            <a href="/register">
+            <a href="/auth/register">
               <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4 h-9 text-sm">
                 Começar grátis
               </Button>
@@ -85,7 +85,7 @@ export default function HomePage() {
               </p>
 
               <div className="mt-5 flex flex-wrap items-center gap-4">
-                <a href="/login">
+                <a href="/auth/login">
                   <Button className="bg-white text-emerald-700 hover:bg-slate-50 rounded-full px-7 h-11 text-sm font-semibold shadow-[0_12px_35px_rgba(0,0,0,0.15)]">
                     Acessar painel
                   </Button>

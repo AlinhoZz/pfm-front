@@ -150,7 +150,7 @@ export default function FinancialAiReportPage() {
       typeof window !== "undefined" ? localStorage.getItem("clientId") : null
 
     if (!token || !cid) {
-      router.replace("/login")
+      router.replace("/auth/login")
       return
     }
 
